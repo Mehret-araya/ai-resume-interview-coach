@@ -4,10 +4,13 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
+import connectDB from "./config/database.js";
 
 dotenv.config();
 
 const app = express();
+
+connectDB();
 
 const PORT = process.env.PORT || 5000;
 
