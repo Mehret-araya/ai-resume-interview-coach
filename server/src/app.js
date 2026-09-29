@@ -5,14 +5,17 @@ import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import connectDB from "./config/database.js";
+import authRoutes from "./routes/authRoutes.js";
+import resumeRoutes from "./routes/resumeRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
-connectDB();
-
 const PORT = process.env.PORT || 5000;
+
+// Connect to MongoDB
+connectDB();
 
 // Security middleware
 app.use(helmet());
@@ -26,14 +29,21 @@ app.use(express.json());
 // HTTP request logging
 app.use(morgan("dev"));
 
+// Authentication routes
+app.use("/auth", authRoutes);
+
+// Resume routes
+app.use("/resumes", resumeRoutes);
+
 // Health check route
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "AI Resume + Interview Coach API is running 🚀"
+    message: "AI Resume + Interview Coach API is running 🚀",
   });
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
