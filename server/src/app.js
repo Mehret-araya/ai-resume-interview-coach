@@ -7,6 +7,8 @@ import dotenv from "dotenv";
 import connectDB from "./config/database.js";
 import authRoutes from "./routes/authRoutes.js";
 import resumeRoutes from "./routes/resumeRoutes.js";
+import resumeAnalysisRoutes from "./routes/resumeAnalysisRoutes.js";
+import resumeRewriteRoutes from "./routes/resumeRewriteRoutes.js";
 
 dotenv.config();
 
@@ -34,6 +36,8 @@ app.use("/auth", authRoutes);
 
 // Resume routes
 app.use("/resumes", resumeRoutes);
+app.use("/resumes", resumeAnalysisRoutes);
+app.use("/resumes", resumeRewriteRoutes);
 
 // Health check route
 app.get("/", (req, res) => {
