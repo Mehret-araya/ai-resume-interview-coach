@@ -10,6 +10,7 @@ import resumeRoutes from "./routes/resumeRoutes.js";
 import resumeAnalysisRoutes from "./routes/resumeAnalysisRoutes.js";
 import resumeRewriteRoutes from "./routes/resumeRewriteRoutes.js";
 import resumeEditorRoutes from "./routes/resumeEditorRoutes.js";
+import resumePdfRoutes from "./routes/resumePdfRoutes.js";
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use("/resumes", resumeRoutes);
 app.use("/resumes", resumeAnalysisRoutes);
 app.use("/resumes", resumeRewriteRoutes);
 app.use("/resumes", resumeEditorRoutes);
+app.use("/resumes", resumePdfRoutes);
 // Health check route
 app.get("/", (req, res) => {
   res.json({
