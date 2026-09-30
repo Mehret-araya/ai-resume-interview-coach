@@ -6,13 +6,13 @@ http://localhost:5000
 
 ---
 
-## Authentication
+## 1. Authentication
 
 ### Register
 
 POST `/auth/register`
 
-Request:
+Request body:
 
 ```json
 {
