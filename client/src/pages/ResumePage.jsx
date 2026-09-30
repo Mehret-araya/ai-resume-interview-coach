@@ -1,8 +1,10 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import {
   getMyResumes,
   uploadResume,
+  analyzeResume,
 } from "../api/resumeApi.js";
 
 const ResumePage = () => {
@@ -14,6 +16,8 @@ const ResumePage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingResumes, setLoadingResumes] = useState(true);
+  const [analyzingResumeId, setAnalyzingResumeId] = useState(null);
+  const [analyzedResumeIds, setAnalyzedResumeIds] = useState([]);
 
   const loadResumes = async () => {
     try {
@@ -82,11 +86,49 @@ const ResumePage = () => {
     }
   };
 
+  const handleAnalyze = async (resumeId) => {
+    setMessage("");
+    setError("");
+    setAnalyzingResumeId(resumeId);
+
+    try {
+      const data = await analyzeResume(resumeId, token);
+
+      console.log("Resume analysis response:", data);
+
+      if (!data.success) {
+        setError(data.message || "Resume analysis failed");
+        return;
+      }
+
+      setMessage("Resume analyzed successfully.");
+
+      setAnalyzedResumeIds((currentIds) => {
+        if (currentIds.includes(resumeId)) {
+          return currentIds;
+        }
+
+        return [...currentIds, resumeId];
+      });
+    } catch (error) {
+      console.error("Resume analysis error:", error);
+
+      setError(
+        error.response?.data?.message ||
+          "Unable to analyze resume"
+      );
+    } finally {
+      setAnalyzingResumeId(null);
+    }
+  };
+
   return (
     <div>
       <h1>Resume</h1>
 
-      <p>Upload your resume to begin the analysis process.</p>
+      <p>
+        Upload your resume to begin the analysis process.
+      </p>
 
       <form onSubmit={handleUpload}>
         <input
@@ -131,6 +173,22 @@ const ResumePage = () => {
               <p>
                 Resume ID: {resume._id}
               </p>
+
+              <button
+                type="button"
+                onClick={() => handleAnalyze(resume._id)}
+                disabled={analyzingResumeId === resume._id}
+              >
+                {analyzingResumeId === resume._id
+                  ? "Analyzing..."
+                  : "Analyze Resume"}
+              </button>
+
+              {analyzedResumeIds.includes(resume._id) && (
+                <p>
+                  Resume analyzed successfully.
+                </p>
+              )}
             </div>
           ))}
         </div>
@@ -140,3 +198,4 @@ const ResumePage = () => {
 };
 
 export default ResumePage;
+
