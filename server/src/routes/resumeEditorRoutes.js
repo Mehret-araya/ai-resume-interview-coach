@@ -5,6 +5,7 @@ import authMiddleware from "../middleware/authMiddleware.js";
 import {
   createOrUpdateResumeEditor,
   getResumeEditor,
+  deleteResumeEditor,
 } from "../controllers/resumeEditorController.js";
 
 const router = express.Router();
@@ -23,6 +24,14 @@ router.get(
   "/:resumeId/editor",
   authMiddleware,
   getResumeEditor
+);
+
+// Delete saved resume editor content
+
+router.delete(
+  "/:resumeId/editor",
+  authMiddleware,
+  deleteResumeEditor
 );
 
 export default router;

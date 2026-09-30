@@ -107,3 +107,33 @@ export const getResumeEditor = async (req, res) => {
     });
   }
 };
+
+export const deleteResumeEditor = async (req, res) => {
+  try {
+    const { resumeId } = req.params;
+
+    const editor = await ResumeEditor.findOneAndDelete({
+      resume: resumeId,
+      user: req.userId,
+    });
+
+    if (!editor) {
+      return res.status(404).json({
+        success: false,
+        message: "Resume editor content not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Resume editor content deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete resume editor error:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error while deleting resume editor content",
+    });
+  }
+};
