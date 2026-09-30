@@ -1,10 +1,10 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import {
   getMyResumes,
   uploadResume,
   analyzeResume,
+  getMyResumeAnalyses,
 } from "../api/resumeApi.js";
 
 const ResumePage = () => {
@@ -12,15 +12,18 @@ const ResumePage = () => {
 
   const [file, setFile] = useState(null);
   const [resumes, setResumes] = useState([]);
+  const [analyses, setAnalyses] = useState([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingResumes, setLoadingResumes] = useState(true);
+  const [loadingAnalyses, setLoadingAnalyses] = useState(true);
   const [analyzingResumeId, setAnalyzingResumeId] = useState(null);
-  const [analyzedResumeIds, setAnalyzedResumeIds] = useState([]);
 
   const loadResumes = async () => {
     try {
+
+
       const data = await getMyResumes(token);
 
       if (data.success) {
@@ -38,9 +41,29 @@ const ResumePage = () => {
     }
   };
 
+  const loadAnalyses = async () => {
+    try {
+      const data = await getMyResumeAnalyses(token);
+
+      if (data.success) {
+        setAnalyses(data.analyses || []);
+      }
+    } catch (error) {
+      console.error("Failed to load resume analyses:", error);
+
+      setError(
+        error.response?.data?.message ||
+          "Unable to load resume analyses"
+      );
+    } finally {
+      setLoadingAnalyses(false);
+    }
+  };
+
   useEffect(() => {
     if (token) {
       loadResumes();
+      loadAnalyses();
     }
   }, [token]);
 
@@ -103,13 +126,7 @@ const ResumePage = () => {
 
       setMessage("Resume analyzed successfully.");
 
-      setAnalyzedResumeIds((currentIds) => {
-        if (currentIds.includes(resumeId)) {
-          return currentIds;
-        }
-
-        return [...currentIds, resumeId];
-      });
+      await loadAnalyses();
     } catch (error) {
       console.error("Resume analysis error:", error);
 
@@ -183,11 +200,116 @@ const ResumePage = () => {
                   ? "Analyzing..."
                   : "Analyze Resume"}
               </button>
+            </div>
+          ))}
+        </div>
+      )}
 
-              {analyzedResumeIds.includes(resume._id) && (
-                <p>
-                  Resume analyzed successfully.
-                </p>
+      <hr />
+
+      <h2>Resume Analysis</h2>
+
+      {loadingAnalyses ? (
+        <p>Loading analyses...</p>
+      ) : analyses.length === 0 ? (
+        <p>No resume analysis available yet.</p>
+      ) : (
+        <div>
+          {analyses.map((analysis) => (
+            <div key={analysis._id}>
+              <h3>
+                {analysis.resume?.originalFileName ||
+                  "Resume Analysis"}
+              </h3>
+
+              <h4>Summary</h4>
+              <p>{analysis.summary}</p>
+
+              <h4>Skills</h4>
+              {analysis.skills?.length > 0 ? (
+                <ul>
+                  {analysis.skills.map((skill, index) => (
+                    <li key={index}>{skill}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No skills recorded.</p>
+              )}
+
+              <h4>Strengths</h4>
+              {analysis.strengths?.length > 0 ? (
+                <ul>
+                  {analysis.strengths.map((strength, index) => (
+                    <li key={index}>{strength}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No strengths recorded.</p>
+              )}
+
+              <h4>Improvement Areas</h4>
+              {analysis.improvementAreas?.length > 0 ? (
+                <ul>
+                  {analysis.improvementAreas.map(
+                    (area, index) => (
+                      <li key={index}>{area}</li>
+                    )
+                  )}
+                </ul>
+              ) : (
+                <p>No improvement areas recorded.</p>
+              )}
+
+              <h4>Experience Observations</h4>
+              {analysis.experienceObservations?.length > 0 ? (
+                <ul>
+                  {analysis.experienceObservations.map(
+                    (observation, index) => (
+                      <li key={index}>{observation}</li>
+                    )
+                  )}
+                </ul>
+              ) : (
+                <p>No experience observations recorded.</p>
+              )}
+
+              <h4>Education Observations</h4>
+              {analysis.educationObservations?.length > 0 ? (
+                <ul>
+                  {analysis.educationObservations.map(
+                    (observation, index) => (
+                      <li key={index}>{observation}</li>
+                    )
+                  )}
+                </ul>
+              ) : (
+                <p>No education observations recorded.</p>
+              )}
+
+              <h4>Missing Sections</h4>
+              {analysis.missingSections?.length > 0 ? (
+                <ul>
+                  {analysis.missingSections.map(
+                    (section, index) => (
+                      <li key={index}>{section}</li>
+                    )
+                  )}
+                </ul>
+              ) : (
+                <p>No missing sections recorded.</p>
+              )}
+
+              <h4>ATS Suggestions</h4>
+              {analysis.atsSuggestions?.length > 0 ? (
+                <ul>
+                  {analysis.atsSuggestions.map(
+                    (suggestion, index) => (
+                      <li key={index}>{suggestion}</li>
+                    )
+                  )}
+                </ul>
+              ) : (
+                <p>No ATS suggestions recorded.</p>
               )}
             </div>
           ))}
