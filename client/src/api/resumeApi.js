@@ -28,3 +28,18 @@ export const getMyResumes = async (token) => {
 
   return response.data;
 };
+
+export const analyzeResume = async (resumeId, token) => {
+  const response = await apiClient.post(
+    `/resumes/${resumeId}/analyze`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
