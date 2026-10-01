@@ -2,6 +2,7 @@ import Interview from "../models/Interview.js";
 import Resume from "../models/Resume.js";
 import aiProvider from "../ai/aiProvider.js";
 import buildInterviewQuestionPrompt from "../ai/interviewQuestionPrompt.js";
+import buildInterviewEvaluationPrompt from "../ai/interviewEvaluationPrompt.js";
 
 export const startInterview = async (req, res) => {
   try {
@@ -111,7 +112,6 @@ export const startInterview = async (req, res) => {
   }
 };
 
-
 export const submitInterviewAnswer = async (req, res) => {
   try {
     const { interviewId } = req.params;
@@ -155,8 +155,53 @@ export const submitInterviewAnswer = async (req, res) => {
       });
     }
 
+    const currentQuestion =
+      interview.questions[questionIndex].question;
+
+    const evaluationPrompt =
+      buildInterviewEvaluationPrompt({
+        targetRole: interview.targetRole,
+        question: currentQuestion,
+        answer: answer.trim(),
+      });
+
+    const aiResponse =
+      await aiProvider.generateText(evaluationPrompt);
+
+    let parsedEvaluation;
+
+    try {
+      parsedEvaluation = JSON.parse(aiResponse);
+    } catch (parseError) {
+      console.error(
+        "Interview evaluation JSON parse error:",
+        parseError.message
+      );
+
+      return res.status(500).json({
+        success: false,
+        message: "AI returned invalid evaluation data",
+      });
+    }
+
+    if (
+      typeof parsedEvaluation.evaluation !== "string" ||
+      typeof parsedEvaluation.score !== "number"
+    ) {
+      return res.status(500).json({
+        success: false,
+        message: "AI returned invalid evaluation data",
+      });
+    }
+
     interview.questions[questionIndex].answer =
       answer.trim();
+
+    interview.questions[questionIndex].evaluation =
+      parsedEvaluation.evaluation;
+
+    interview.questions[questionIndex].score =
+      parsedEvaluation.score;
 
     interview.currentQuestionIndex =
       questionIndex + 1;
@@ -172,7 +217,11 @@ export const submitInterviewAnswer = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Interview answer saved successfully",
+      message: "Interview answer evaluated successfully",
+      evaluation: {
+        evaluation: parsedEvaluation.evaluation,
+        score: parsedEvaluation.score,
+      },
       interview: {
         id: interview._id,
         status: interview.status,
@@ -190,7 +239,7 @@ export const submitInterviewAnswer = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Server error while saving interview answer",
+      message: "Server error while evaluating interview answer",
     });
   }
 };

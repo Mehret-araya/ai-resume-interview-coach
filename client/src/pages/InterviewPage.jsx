@@ -17,6 +17,8 @@ const InterviewPage = () => {
 
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [latestEvaluation, setLatestEvaluation] =
+    useState(null);
 
   const resumeId = "6abce543ec7acb0a3a734328";
 
@@ -28,6 +30,7 @@ const InterviewPage = () => {
 
     setError("");
     setMessage("");
+    setLatestEvaluation(null);
     setLoading(true);
 
     try {
@@ -75,6 +78,7 @@ const InterviewPage = () => {
 
     setError("");
     setMessage("");
+    setLatestEvaluation(null);
     setSubmitting(true);
 
     try {
@@ -95,13 +99,15 @@ const InterviewPage = () => {
       setInterview(data.interview);
       setAnswer("");
 
+      setLatestEvaluation(data.evaluation);
+
       if (data.interview.status === "completed") {
         setMessage(
           "Interview completed successfully."
         );
       } else {
         setMessage(
-          "Answer saved. Continue to the next question."
+          "Answer evaluated. Continue to the next question."
         );
       }
     } catch (error) {
@@ -112,7 +118,7 @@ const InterviewPage = () => {
 
       setError(
         error.response?.data?.message ||
-          "Unable to submit answer."
+          "Unable to evaluate answer."
       );
     } finally {
       setSubmitting(false);
@@ -176,6 +182,22 @@ const InterviewPage = () => {
               of {interview.totalQuestions}
             </p>
 
+            {latestEvaluation && (
+              <section>
+                <h3>AI Evaluation</h3>
+
+                <p>
+                  <strong>Score:</strong>{" "}
+                  {latestEvaluation.score}/10
+                </p>
+
+                <p>
+                  <strong>Feedback:</strong>{" "}
+                  {latestEvaluation.evaluation}
+                </p>
+              </section>
+            )}
+
             {interview.status === "completed" ? (
               <div>
                 <h3>Interview Completed</h3>
@@ -210,7 +232,7 @@ const InterviewPage = () => {
                   disabled={submitting}
                 >
                   {submitting
-                    ? "Submitting..."
+                    ? "Evaluating..."
                     : "Submit Answer"}
                 </button>
               </div>
