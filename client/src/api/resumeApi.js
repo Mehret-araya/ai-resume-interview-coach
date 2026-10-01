@@ -2,7 +2,6 @@ import apiClient from "./apiClient.js";
 
 export const uploadResume = async (file, token) => {
   const formData = new FormData();
-
   formData.append("resume", file);
 
   const response = await apiClient.post(
@@ -43,3 +42,15 @@ export const analyzeResume = async (resumeId, token) => {
   return response.data;
 };
 
+export const getMyResumeAnalyses = async (token) => {
+  const response = await apiClient.get(
+    "/resumes/analysis",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
