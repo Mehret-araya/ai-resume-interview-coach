@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
+
 import {
   getMyResumes,
   uploadResume,
@@ -7,6 +8,13 @@ import {
   getMyResumeAnalyses,
   rewriteResumeSection,
 } from "../api/resumeApi.js";
+
+import {
+  saveResumeEditor,
+  getResumeEditor,
+} from "../api/resumeEditorApi.js";
+
+import { downloadResumePdf } from "../api/resumePdfApi.js";
 
 const ResumePage = () => {
   const { token } = useAuth();
@@ -27,6 +35,12 @@ const ResumePage = () => {
   const [rewriteInstructions, setRewriteInstructions] = useState("");
   const [rewrittenText, setRewrittenText] = useState("");
   const [rewriting, setRewriting] = useState(false);
+  const [editorContent, setEditorContent] = useState("");
+  const [editorLoading, setEditorLoading] = useState(false);
+  const [editorSaving, setEditorSaving] = useState(false);
+  const [editorMessage, setEditorMessage] = useState("");
+  const [editorError, setEditorError] = useState("");
+  const [pdfDownloading, setPdfDownloading] = useState(false);
 
   const loadResumes = async () => {
     try {
@@ -66,12 +80,51 @@ const ResumePage = () => {
     }
   };
 
-  useEffect(() => {
-    if (token) {
-      loadResumes();
-      loadAnalyses();
+    const loadEditor = async (resumeId) => {
+    setEditorLoading(true);
+
+    try {
+      const data = await getResumeEditor(
+        resumeId,
+        token
+      );
+
+      if (data.success) {
+        setEditorContent(data.editor?.content || "");
+      }
+    } catch (error) {
+      if (error.response?.status === 404) {
+        setEditorContent("");
+        return;
+      }
+
+      console.error(
+        "Failed to load resume editor:",
+        error
+      );
+
+      setError(
+        error.response?.data?.message ||
+          "Unable to load resume editor"
+      );
+    } finally {
+      setEditorLoading(false);
     }
-  }, [token]);
+  };
+
+  
+  useEffect(() => {
+  if (token) {
+    loadResumes();
+    loadAnalyses();
+  }
+}, [token]);
+
+useEffect(() => {
+  if (token && resumes.length > 0) {
+    loadEditor(resumes[0]._id);
+  }
+}, [token, resumes]);
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0] || null);
@@ -202,6 +255,106 @@ const ResumePage = () => {
       setRewriting(false);
     }
   };
+
+const handleSaveEditor = async () => {
+  if (!resumes[0]?._id) {
+    setEditorError("No resume is available to save.");
+    return;
+  }
+
+  setEditorMessage("");
+  setEditorError("");
+  setEditorSaving(true);
+
+  try {
+    const data = await saveResumeEditor(
+      resumes[0]._id,
+      editorContent,
+      token
+    );
+
+    if (!data.success) {
+      setEditorError(
+        data.message || "Unable to save resume editor"
+      );
+      return;
+    }
+
+    setEditorMessage(
+      "Resume editor saved successfully."
+    );
+
+    setEditorContent(
+      data.editor?.content || editorContent
+    );
+  } catch (error) {
+    console.error(
+      "Save resume editor error:",
+      error
+    );
+
+    setEditorError(
+      error.response?.data?.message ||
+        "Unable to save resume editor"
+    );
+  } finally {
+    setEditorSaving(false);
+  }
+};
+
+const handleDownloadPdf = async () => {
+  if (!resumes[0]?._id) {
+    setEditorError(
+      "No resume is available to download."
+    );
+    return;
+  }
+
+  setEditorMessage("");
+  setEditorError("");
+  setPdfDownloading(true);
+
+  try {
+    const pdfBlob = await downloadResumePdf(
+      resumes[0]._id,
+      token
+    );
+
+    const url = window.URL.createObjectURL(
+      pdfBlob
+    );
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "resume.pdf";
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+
+    setEditorMessage(
+      "Resume PDF downloaded successfully."
+    );
+  } catch (error) {
+    console.error(
+      "Resume PDF download error:",
+      error
+    );
+
+    setEditorError(
+      error.response?.data?.message ||
+        "Unable to download resume PDF"
+    );
+  } finally {
+    setPdfDownloading(false);
+  }
+};
+
 
   return (
     <div>
@@ -450,6 +603,63 @@ const ResumePage = () => {
           <p>{rewrittenText}</p>
         </div>
       )}
+
+     <hr />
+
+<h2>Resume Editor</h2>
+
+{editorLoading ? (
+  <p>Loading resume editor...</p>
+) : (
+  <div>
+    <textarea
+      value={editorContent}
+      onChange={(event) =>
+        setEditorContent(event.target.value)
+      }
+      rows="20"
+      cols="90"
+      placeholder="Edit your resume content here..."
+    />
+
+    <br />
+    <br />
+
+    <button
+      type="button"
+      onClick={handleSaveEditor}
+      disabled={editorSaving}
+    >
+      {editorSaving
+        ? "Saving..."
+        : "Save Resume"}
+    </button>
+
+    <br />
+<br />
+
+<button
+  type="button"
+  onClick={handleDownloadPdf}
+  disabled={pdfDownloading || editorLoading}
+>
+  {pdfDownloading
+    ? "Downloading..."
+    : "Download Resume PDF"}
+</button>
+
+    {editorMessage && (
+      <p>{editorMessage}</p>
+    )}
+
+    {editorError && (
+      <p>{editorError}</p>
+    )}
+  </div>
+)}
+
+
+
     </div>
   );
 };
