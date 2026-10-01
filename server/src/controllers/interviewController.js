@@ -3,6 +3,7 @@ import Resume from "../models/Resume.js";
 import aiProvider from "../ai/aiProvider.js";
 import buildInterviewQuestionPrompt from "../ai/interviewQuestionPrompt.js";
 import buildInterviewEvaluationPrompt from "../ai/interviewEvaluationPrompt.js";
+import buildInterviewFinalReportPrompt from "../ai/interviewFinalReportPrompt.js";
 
 export const startInterview = async (req, res) => {
   try {
@@ -207,11 +208,42 @@ export const submitInterviewAnswer = async (req, res) => {
       questionIndex + 1;
 
     if (
-      interview.currentQuestionIndex >=
-      interview.totalQuestions
-    ) {
-      interview.status = "completed";
-    }
+  interview.currentQuestionIndex >=
+  interview.totalQuestions
+) {
+  interview.status = "completed";
+
+  const finalReportPrompt =
+    buildInterviewFinalReportPrompt({
+      targetRole: interview.targetRole,
+      questions: interview.questions,
+    });
+
+  const finalReportResponse =
+    await aiProvider.generateText(finalReportPrompt);
+
+  let parsedFinalReport;
+
+  try {
+    parsedFinalReport =
+      JSON.parse(finalReportResponse);
+  } catch (parseError) {
+    console.error(
+      "Final interview report JSON parse error:",
+      parseError.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "AI returned invalid final report data",
+    });
+  }
+
+  interview.finalReport =
+    JSON.stringify(parsedFinalReport);
+}
+
 
     await interview.save();
 
@@ -229,6 +261,8 @@ export const submitInterviewAnswer = async (req, res) => {
           interview.currentQuestionIndex,
         totalQuestions: interview.totalQuestions,
         questions: interview.questions,
+        finalReport: interview.finalReport,
+
       },
     });
   } catch (error) {

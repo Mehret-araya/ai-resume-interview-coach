@@ -198,16 +198,124 @@ const InterviewPage = () => {
               </section>
             )}
 
-            {interview.status === "completed" ? (
-              <div>
-                <h3>Interview Completed</h3>
+            
+{interview.status === "completed" ? (
+  <div>
+    <h3>Interview Completed</h3>
 
+    <p>
+      You have completed all five
+      interview questions.
+    </p>
+
+    {interview.finalReport && (
+      <section>
+        <h3>Final Interview Report</h3>
+
+        {(() => {
+          let report;
+
+          try {
+            report =
+              typeof interview.finalReport ===
+              "string"
+                ? JSON.parse(
+                    interview.finalReport
+                  )
+                : interview.finalReport;
+          } catch {
+            report = null;
+          }
+
+          if (!report) {
+            return (
+              <p>
+                Final report could not be displayed.
+              </p>
+            );
+          }
+
+          return (
+            <div>
+              <h4>Overall Performance</h4>
+              <p>
+                {report.overallPerformance}
+              </p>
+
+              <h4>Key Strengths</h4>
+
+              {report.strengths?.length > 0 ? (
+                <ul>
+                  {report.strengths.map(
+                    (strength, index) => (
+                      <li key={index}>
+                        {strength}
+                      </li>
+                    )
+                  )}
+                </ul>
+              ) : (
+                <p>No strengths recorded.</p>
+              )}
+
+              <h4>Areas for Improvement</h4>
+
+              {report.areasForImprovement?.length >
+              0 ? (
+                <ul>
+                  {report.areasForImprovement.map(
+                    (area, index) => (
+                      <li key={index}>
+                        {area}
+                      </li>
+                    )
+                  )}
+                </ul>
+              ) : (
                 <p>
-                  You have completed all five
-                  interview questions.
+                  No improvement areas recorded.
                 </p>
-              </div>
-            ) : (
+              )}
+
+              <h4>Technical Performance</h4>
+              <p>
+                {report.technicalPerformance}
+              </p>
+
+              <h4>
+                Communication Performance
+              </h4>
+              <p>
+                {report.communicationPerformance}
+              </p>
+
+              <h4>Recommendations</h4>
+
+              {report.recommendations?.length >
+              0 ? (
+                <ul>
+                  {report.recommendations.map(
+                    (recommendation, index) => (
+                      <li key={index}>
+                        {recommendation}
+                      </li>
+                    )
+                  )}
+                </ul>
+              ) : (
+                <p>
+                  No recommendations recorded.
+                </p>
+              )}
+            </div>
+          );
+        })()}
+      </section>
+    )}
+  </div>
+) 
+
+                : (
               <div>
                 <h3>
                   {currentQuestion?.question}
