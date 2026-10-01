@@ -110,3 +110,87 @@ export const startInterview = async (req, res) => {
     });
   }
 };
+
+
+export const submitInterviewAnswer = async (req, res) => {
+  try {
+    const { interviewId } = req.params;
+    const { answer } = req.body;
+
+    if (typeof answer !== "string" || !answer.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Interview answer is required",
+      });
+    }
+
+    const interview = await Interview.findOne({
+      _id: interviewId,
+      user: req.userId,
+    });
+
+    if (!interview) {
+      return res.status(404).json({
+        success: false,
+        message: "Interview not found",
+      });
+    }
+
+    if (interview.status !== "in_progress") {
+      return res.status(400).json({
+        success: false,
+        message: "Interview is no longer in progress",
+      });
+    }
+
+    const questionIndex = interview.currentQuestionIndex;
+
+    if (
+      questionIndex < 0 ||
+      questionIndex >= interview.questions.length
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid interview question",
+      });
+    }
+
+    interview.questions[questionIndex].answer =
+      answer.trim();
+
+    interview.currentQuestionIndex =
+      questionIndex + 1;
+
+    if (
+      interview.currentQuestionIndex >=
+      interview.totalQuestions
+    ) {
+      interview.status = "completed";
+    }
+
+    await interview.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Interview answer saved successfully",
+      interview: {
+        id: interview._id,
+        status: interview.status,
+        currentQuestionIndex:
+          interview.currentQuestionIndex,
+        totalQuestions: interview.totalQuestions,
+        questions: interview.questions,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Submit interview answer error:",
+      error.message
+    );
+
+    res.status(500).json({
+      success: false,
+      message: "Server error while saving interview answer",
+    });
+  }
+};
