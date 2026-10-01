@@ -5,6 +5,7 @@ import {
   uploadResume,
   analyzeResume,
   getMyResumeAnalyses,
+  rewriteResumeSection,
 } from "../api/resumeApi.js";
 
 const ResumePage = () => {
@@ -15,15 +16,20 @@ const ResumePage = () => {
   const [analyses, setAnalyses] = useState([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [loadingResumes, setLoadingResumes] = useState(true);
   const [loadingAnalyses, setLoadingAnalyses] = useState(true);
   const [analyzingResumeId, setAnalyzingResumeId] = useState(null);
 
+  const [rewriteSection, setRewriteSection] = useState("");
+  const [originalText, setOriginalText] = useState("");
+  const [rewriteInstructions, setRewriteInstructions] = useState("");
+  const [rewrittenText, setRewrittenText] = useState("");
+  const [rewriting, setRewriting] = useState(false);
+
   const loadResumes = async () => {
     try {
-
-
       const data = await getMyResumes(token);
 
       if (data.success) {
@@ -139,6 +145,64 @@ const ResumePage = () => {
     }
   };
 
+  const handleRewrite = async (event) => {
+    event.preventDefault();
+
+    if (!resumes[0]?._id) {
+      setError("No resume is available for rewriting.");
+      return;
+    }
+
+    if (!rewriteSection.trim()) {
+      setError("Please enter a resume section.");
+      return;
+    }
+
+    if (!originalText.trim()) {
+      setError("Please enter the original resume text.");
+      return;
+    }
+
+    setMessage("");
+    setError("");
+    setRewrittenText("");
+    setRewriting(true);
+
+    try {
+      const data = await rewriteResumeSection(
+        resumes[0]._id,
+        {
+          section: rewriteSection,
+          originalText,
+          instructions: rewriteInstructions,
+        },
+        token
+      );
+
+      if (!data.success) {
+        setError(
+          data.message || "Resume rewrite failed"
+        );
+        return;
+      }
+
+      setRewrittenText(
+        data.rewrite?.rewrittenText || ""
+      );
+
+      setMessage("Resume section rewritten successfully.");
+    } catch (error) {
+      console.error("Resume rewrite error:", error);
+
+      setError(
+        error.response?.data?.message ||
+          "Unable to rewrite resume section"
+      );
+    } finally {
+      setRewriting(false);
+    }
+  };
+
   return (
     <div>
       <h1>Resume</h1>
@@ -156,14 +220,13 @@ const ResumePage = () => {
 
         {file && <p>Selected file: {file.name}</p>}
 
-        {message && <p>{message}</p>}
-
-        {error && <p>{error}</p>}
-
         <button type="submit" disabled={loading}>
           {loading ? "Uploading..." : "Upload Resume"}
         </button>
       </form>
+
+      {message && <p>{message}</p>}
+      {error && <p>{error}</p>}
 
       <hr />
 
@@ -179,22 +242,20 @@ const ResumePage = () => {
             <div key={resume._id}>
               <h3>{resume.originalFileName}</h3>
 
-              <p>
-                Type: {resume.mimeType}
-              </p>
+              <p>Type: {resume.mimeType}</p>
 
               <p>
                 Size: {(resume.fileSize / 1024).toFixed(2)} KB
               </p>
 
-              <p>
-                Resume ID: {resume._id}
-              </p>
+              <p>Resume ID: {resume._id}</p>
 
               <button
                 type="button"
                 onClick={() => handleAnalyze(resume._id)}
-                disabled={analyzingResumeId === resume._id}
+                disabled={
+                  analyzingResumeId === resume._id
+                }
               >
                 {analyzingResumeId === resume._id
                   ? "Analyzing..."
@@ -239,9 +300,11 @@ const ResumePage = () => {
               <h4>Strengths</h4>
               {analysis.strengths?.length > 0 ? (
                 <ul>
-                  {analysis.strengths.map((strength, index) => (
-                    <li key={index}>{strength}</li>
-                  ))}
+                  {analysis.strengths.map(
+                    (strength, index) => (
+                      <li key={index}>{strength}</li>
+                    )
+                  )}
                 </ul>
               ) : (
                 <p>No strengths recorded.</p>
@@ -315,9 +378,80 @@ const ResumePage = () => {
           ))}
         </div>
       )}
+
+      <hr />
+
+      <h2>Improve Resume Section</h2>
+
+      <form onSubmit={handleRewrite}>
+        <div>
+          <label>
+            Resume Section
+            <br />
+            <input
+              type="text"
+              value={rewriteSection}
+              onChange={(event) =>
+                setRewriteSection(event.target.value)
+              }
+              placeholder="e.g. Professional Profile"
+            />
+          </label>
+        </div>
+
+        <br />
+
+        <div>
+          <label>
+            Original Text
+            <br />
+            <textarea
+              value={originalText}
+              onChange={(event) =>
+                setOriginalText(event.target.value)
+              }
+              rows="8"
+              cols="70"
+              placeholder="Paste the original resume section here"
+            />
+          </label>
+        </div>
+
+        <br />
+
+        <div>
+          <label>
+            Instructions
+            <br />
+            <textarea
+              value={rewriteInstructions}
+              onChange={(event) =>
+                setRewriteInstructions(event.target.value)
+              }
+              rows="5"
+              cols="70"
+              placeholder="Example: Make it clearer and more professional"
+            />
+          </label>
+        </div>
+
+        <br />
+
+        <button type="submit" disabled={rewriting}>
+          {rewriting
+            ? "Rewriting..."
+            : "Rewrite Section"}
+        </button>
+      </form>
+
+      {rewrittenText && (
+        <div>
+          <h3>Rewritten Text</h3>
+          <p>{rewrittenText}</p>
+        </div>
+      )}
     </div>
   );
 };
 
 export default ResumePage;
-

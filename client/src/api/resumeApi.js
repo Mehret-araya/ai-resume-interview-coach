@@ -54,3 +54,21 @@ export const getMyResumeAnalyses = async (token) => {
 
   return response.data;
 };
+
+export const rewriteResumeSection = async (
+  resumeId,
+  rewriteData,
+  token
+) => {
+  const response = await apiClient.post(
+    `/resumes/${resumeId}/rewrite`,
+    rewriteData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
