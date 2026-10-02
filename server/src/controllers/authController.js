@@ -3,6 +3,22 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
+const createToken = (userId) => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is not configured");
+  }
+
+  return jwt.sign(
+    {
+      userId,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
+};
+
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -10,7 +26,8 @@ export const register = async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Name, email, and password are required",
+        message:
+          "Name, email, and password are required",
       });
     }
 
@@ -23,7 +40,10 @@ export const register = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(
+      password,
+      10
+    );
 
     const user = await User.create({
       name,
@@ -31,15 +51,7 @@ export const register = async (req, res) => {
       password: hashedPassword,
     });
 
-    const token = jwt.sign(
-      {
-        userId: user._id,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    );
+    const token = createToken(user._id);
 
     res.status(201).json({
       success: true,
@@ -52,7 +64,10 @@ export const register = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Registration error:", error.message);
+    console.error(
+      "Registration error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
@@ -68,7 +83,8 @@ export const login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email and password are required",
+        message:
+          "Email and password are required",
       });
     }
 
@@ -81,7 +97,10 @@ export const login = async (req, res) => {
       });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
 
     if (!passwordMatch) {
       return res.status(401).json({
@@ -90,15 +109,7 @@ export const login = async (req, res) => {
       });
     }
 
-    const token = jwt.sign(
-      {
-        userId: user._id,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    );
+    const token = createToken(user._id);
 
     res.status(200).json({
       success: true,
@@ -111,7 +122,10 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error.message);
+    console.error(
+      "Login error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
@@ -120,10 +134,11 @@ export const login = async (req, res) => {
   }
 };
 
-
 export const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select("-password");
+    const user = await User.findById(
+      req.userId
+    ).select("-password");
 
     if (!user) {
       return res.status(404).json({
@@ -141,11 +156,16 @@ export const getMe = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get user error:", error.message);
+    console.error(
+      "Get user error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
-      message: "Server error while getting user",
+      message:
+        "Server error while getting user",
     });
   }
 };
+
