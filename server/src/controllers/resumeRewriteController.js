@@ -1,7 +1,13 @@
+
 import Resume from "../models/Resume.js";
 import ResumeRewrite from "../models/ResumeRewrite.js";
+import User from "../models/User.js";
 import aiProvider from "../ai/aiProvider.js";
 import buildResumeRewritePrompt from "../ai/resumeRewritePrompt.js";
+import {
+  FREE_RESUME_REWRITES,
+  hasResumeRewriteAvailable,
+} from "../utils/usageLimits.js";
 
 export const rewriteResumeSection = async (req, res) => {
   try {
@@ -12,6 +18,24 @@ export const rewriteResumeSection = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Section and original text are required",
+      });
+    }
+
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (!hasResumeRewriteAvailable(user)) {
+      return res.status(429).json({
+        success: false,
+        message: `Free resume rewrite limit reached. You can use ${FREE_RESUME_REWRITES} resume rewrites per usage period.`,
+        limit: FREE_RESUME_REWRITES,
+        used: user.resumeRewriteCount,
       });
     }
 
@@ -51,6 +75,9 @@ export const rewriteResumeSection = async (req, res) => {
       instructions: instructions || "",
     });
 
+    user.resumeRewriteCount += 1;
+    await user.save();
+
     res.status(201).json({
       success: true,
       message: "Resume section rewritten successfully",
@@ -62,6 +89,13 @@ export const rewriteResumeSection = async (req, res) => {
         rewrittenText: rewrite.rewrittenText,
         instructions: rewrite.instructions,
         createdAt: rewrite.createdAt,
+      },
+      usage: {
+        used: user.resumeRewriteCount,
+        limit: FREE_RESUME_REWRITES,
+        remaining:
+          FREE_RESUME_REWRITES -
+          user.resumeRewriteCount,
       },
     });
   } catch (error) {
@@ -95,3 +129,4 @@ export const getMyResumeRewrites = async (req, res) => {
     });
   }
 };
+

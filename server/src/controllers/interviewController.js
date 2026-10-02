@@ -1,9 +1,15 @@
+
 import Interview from "../models/Interview.js";
 import Resume from "../models/Resume.js";
+import User from "../models/User.js";
 import aiProvider from "../ai/aiProvider.js";
 import buildInterviewQuestionPrompt from "../ai/interviewQuestionPrompt.js";
 import buildInterviewEvaluationPrompt from "../ai/interviewEvaluationPrompt.js";
 import buildInterviewFinalReportPrompt from "../ai/interviewFinalReportPrompt.js";
+import {
+  FREE_INTERVIEWS,
+  hasInterviewAvailable,
+} from "../utils/usageLimits.js";
 
 export const startInterview = async (req, res) => {
   try {
@@ -13,6 +19,24 @@ export const startInterview = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Resume and target role are required",
+      });
+    }
+
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (!hasInterviewAvailable(user)) {
+      return res.status(429).json({
+        success: false,
+        message: `Free interview limit reached. You can start ${FREE_INTERVIEWS} interview per usage period.`,
+        limit: FREE_INTERVIEWS,
+        used: user.interviewCount,
       });
     }
 
@@ -86,6 +110,9 @@ export const startInterview = async (req, res) => {
       questions,
     });
 
+    user.interviewCount += 1;
+    await user.save();
+
     res.status(201).json({
       success: true,
       message: "Interview started successfully",
@@ -98,6 +125,13 @@ export const startInterview = async (req, res) => {
           interview.currentQuestionIndex,
         totalQuestions: interview.totalQuestions,
         questions: interview.questions,
+      },
+      usage: {
+        used: user.interviewCount,
+        limit: FREE_INTERVIEWS,
+        remaining:
+          FREE_INTERVIEWS -
+          user.interviewCount,
       },
     });
   } catch (error) {
@@ -208,42 +242,41 @@ export const submitInterviewAnswer = async (req, res) => {
       questionIndex + 1;
 
     if (
-  interview.currentQuestionIndex >=
-  interview.totalQuestions
-) {
-  interview.status = "completed";
+      interview.currentQuestionIndex >=
+      interview.totalQuestions
+    ) {
+      interview.status = "completed";
 
-  const finalReportPrompt =
-    buildInterviewFinalReportPrompt({
-      targetRole: interview.targetRole,
-      questions: interview.questions,
-    });
+      const finalReportPrompt =
+        buildInterviewFinalReportPrompt({
+          targetRole: interview.targetRole,
+          questions: interview.questions,
+        });
 
-  const finalReportResponse =
-    await aiProvider.generateText(finalReportPrompt);
+      const finalReportResponse =
+        await aiProvider.generateText(finalReportPrompt);
 
-  let parsedFinalReport;
+      let parsedFinalReport;
 
-  try {
-    parsedFinalReport =
-      JSON.parse(finalReportResponse);
-  } catch (parseError) {
-    console.error(
-      "Final interview report JSON parse error:",
-      parseError.message
-    );
+      try {
+        parsedFinalReport =
+          JSON.parse(finalReportResponse);
+      } catch (parseError) {
+        console.error(
+          "Final interview report JSON parse error:",
+          parseError.message
+        );
 
-    return res.status(500).json({
-      success: false,
-      message:
-        "AI returned invalid final report data",
-    });
-  }
+        return res.status(500).json({
+          success: false,
+          message:
+            "AI returned invalid final report data",
+        });
+      }
 
-  interview.finalReport =
-    JSON.stringify(parsedFinalReport);
-}
-
+      interview.finalReport =
+        JSON.stringify(parsedFinalReport);
+    }
 
     await interview.save();
 
@@ -262,7 +295,6 @@ export const submitInterviewAnswer = async (req, res) => {
         totalQuestions: interview.totalQuestions,
         questions: interview.questions,
         finalReport: interview.finalReport,
-
       },
     });
   } catch (error) {
@@ -277,3 +309,4 @@ export const submitInterviewAnswer = async (req, res) => {
     });
   }
 };
+

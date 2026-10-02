@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -21,6 +22,23 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
     },
+
+    resumeRewriteCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    interviewCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    usagePeriodStart: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
     timestamps: true,
@@ -30,3 +48,4 @@ const userSchema = new mongoose.Schema(
 const User = mongoose.model("User", userSchema);
 
 export default User;
+
