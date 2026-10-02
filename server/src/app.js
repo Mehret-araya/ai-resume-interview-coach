@@ -4,7 +4,10 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
+
 import connectDB from "./config/database.js";
+
 import authRoutes from "./routes/authRoutes.js";
 import resumeRoutes from "./routes/resumeRoutes.js";
 import resumeAnalysisRoutes from "./routes/resumeAnalysisRoutes.js";
@@ -22,8 +25,22 @@ const PORT = process.env.PORT || 5000;
 // Connect to MongoDB
 connectDB();
 
+// Global rate limiter
+const globalRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message:
+      "Too many requests. Please try again later.",
+  },
+});
+
 // Security middleware
 app.use(helmet());
+app.use(globalRateLimiter);
 
 // Enable requests from the frontend
 app.use(cors());
@@ -43,7 +60,10 @@ app.use("/resumes", resumeAnalysisRoutes);
 app.use("/resumes", resumeRewriteRoutes);
 app.use("/resumes", resumeEditorRoutes);
 app.use("/resumes", resumePdfRoutes);
+
+// Interview routes
 app.use("/interviews", interviewRoutes);
+
 // Health check route
 app.get("/", (req, res) => {
   res.json({
