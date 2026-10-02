@@ -1,6 +1,5 @@
-
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
+import "./InterviewPage.css";
 import {
   speakText,
   stopSpeaking,
@@ -169,6 +168,12 @@ const InterviewPage = () => {
 
   const handleSubmitAnswer = async () => {
     if (!answer.trim()) {
+        if (recognition) {
+  recognition.stop();
+  setRecognition(null);
+}
+
+setIsListening(false);
       setError("Please enter an answer.");
       return;
     }
@@ -239,6 +244,34 @@ const InterviewPage = () => {
     interview?.questions?.[
       interview.currentQuestionIndex
     ];
+
+
+    useEffect(() => {
+  if (
+    interview?.status === "in_progress" &&
+    currentQuestion?.question
+  ) {
+    setAnswer("");
+    setLatestEvaluation(null);
+
+    speakText(currentQuestion.question);
+  }
+
+  return () => {
+    stopSpeaking();
+
+    if (recognition) {
+      recognition.stop();
+    }
+
+    setIsListening(false);
+    setRecognition(null);
+  };
+}, [
+  interview?.status,
+  interview?.currentQuestionIndex,
+]);
+
 
   return (
     <div>
