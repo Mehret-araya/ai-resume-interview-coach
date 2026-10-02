@@ -51,7 +51,7 @@ app.use(
 );
 
 // Parse JSON request bodies
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 
 // HTTP request logging
 app.use(morgan("dev"));
