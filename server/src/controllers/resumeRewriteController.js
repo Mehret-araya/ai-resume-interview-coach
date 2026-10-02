@@ -7,6 +7,7 @@ import buildResumeRewritePrompt from "../ai/resumeRewritePrompt.js";
 import {
   FREE_RESUME_REWRITES,
   hasResumeRewriteAvailable,
+  initializeUsageFields,
 } from "../utils/usageLimits.js";
 
 export const rewriteResumeSection = async (req, res) => {
@@ -20,17 +21,27 @@ export const rewriteResumeSection = async (req, res) => {
         message: "Section and original text are required",
       });
     }
+const user = await User.findById(req.userId);
 
-    const user = await User.findById(req.userId);
+if (!user) {
+  return res.status(404).json({
+    success: false,
+    message: "User not found",
+  });
+}
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+const usageInitialized = initializeUsageFields(user);
 
-    if (!hasResumeRewriteAvailable(user)) {
+if (usageInitialized) {
+  await user.save();
+}
+
+if (!hasResumeRewriteAvailable(user)) {
+
+
+    
+
+
       return res.status(429).json({
         success: false,
         message: `Free resume rewrite limit reached. You can use ${FREE_RESUME_REWRITES} resume rewrites per usage period.`,

@@ -6,11 +6,12 @@ import aiProvider from "../ai/aiProvider.js";
 import buildInterviewQuestionPrompt from "../ai/interviewQuestionPrompt.js";
 import buildInterviewEvaluationPrompt from "../ai/interviewEvaluationPrompt.js";
 import buildInterviewFinalReportPrompt from "../ai/interviewFinalReportPrompt.js";
+
 import {
   FREE_INTERVIEWS,
   hasInterviewAvailable,
+  initializeUsageFields,
 } from "../utils/usageLimits.js";
-
 export const startInterview = async (req, res) => {
   try {
     const { resumeId, targetRole } = req.body;
@@ -22,16 +23,23 @@ export const startInterview = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.userId);
+   const user = await User.findById(req.userId);
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+if (!user) {
+  return res.status(404).json({
+    success: false,
+    message: "User not found",
+  });
+}
 
-    if (!hasInterviewAvailable(user)) {
+const usageInitialized = initializeUsageFields(user);
+
+if (usageInitialized) {
+  await user.save();
+}
+
+if (!hasInterviewAvailable(user)) {
+
       return res.status(429).json({
         success: false,
         message: `Free interview limit reached. You can start ${FREE_INTERVIEWS} interview per usage period.`,
