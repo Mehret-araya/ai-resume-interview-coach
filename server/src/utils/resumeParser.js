@@ -1,10 +1,29 @@
 import fs from "fs";
-import path from "path";
 import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";
 
+const getFileBuffer = async (filePath) => {
+  if (
+    typeof filePath === "string" &&
+    (filePath.startsWith("http://") ||
+      filePath.startsWith("https://"))
+  ) {
+    const response = await fetch(filePath);
+
+    if (!response.ok) {
+      throw new Error(
+        `Unable to download uploaded resume: ${response.status}`
+      );
+    }
+
+    return Buffer.from(await response.arrayBuffer());
+  }
+
+  return fs.readFileSync(filePath);
+};
+
 const parseResume = async (filePath, mimeType) => {
-  const fileBuffer = fs.readFileSync(filePath);
+  const fileBuffer = await getFileBuffer(filePath);
 
   if (mimeType === "application/pdf") {
     const parser = new PDFParse({
