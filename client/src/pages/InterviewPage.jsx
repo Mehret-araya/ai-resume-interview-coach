@@ -1,5 +1,7 @@
+
 import { useEffect, useState } from "react";
 import "./InterviewPage.css";
+
 import {
   speakText,
   stopSpeaking,
@@ -16,18 +18,33 @@ import {
   submitInterviewAnswer,
 } from "../api/interviewApi.js";
 
+import {
+  getMyResumes,
+} from "../api/resumeApi.js";
+
 const InterviewPage = () => {
   const { token } = useAuth();
+
+  const [resumes, setResumes] = useState([]);
+  const [selectedResumeId, setSelectedResumeId] =
+    useState("");
 
   const [targetRole, setTargetRole] = useState("");
   const [interview, setInterview] = useState(null);
   const [answer, setAnswer] = useState("");
 
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [loadingResumes, setLoadingResumes] =
+    useState(true);
 
-  const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] =
+    useState(false);
+
+  const [isListening, setIsListening] =
+    useState(false);
+
+  const [recognition, setRecognition] =
+    useState(null);
 
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -35,9 +52,50 @@ const InterviewPage = () => {
   const [latestEvaluation, setLatestEvaluation] =
     useState(null);
 
-  const resumeId = "6abce543ec7acb0a3a734328";
+  useEffect(() => {
+    const loadResumes = async () => {
+      try {
+        const data = await getMyResumes(token);
+
+        if (data.success) {
+          const userResumes = data.resumes || [];
+
+          setResumes(userResumes);
+
+          if (userResumes.length > 0) {
+            setSelectedResumeId(
+              userResumes[0]._id
+            );
+          }
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load resumes:",
+          error
+        );
+
+        setError(
+          error.response?.data?.message ||
+            "Unable to load your resumes."
+        );
+      } finally {
+        setLoadingResumes(false);
+      }
+    };
+
+    if (token) {
+      loadResumes();
+    }
+  }, [token]);
 
   const handleStartInterview = async () => {
+    if (!selectedResumeId) {
+      setError(
+        "Please select a resume before starting the interview."
+      );
+      return;
+    }
+
     if (!targetRole.trim()) {
       setError("Please enter a target role.");
       return;
@@ -50,7 +108,7 @@ const InterviewPage = () => {
 
     try {
       const data = await startInterview(
-        resumeId,
+        selectedResumeId,
         targetRole,
         token
       );
@@ -65,6 +123,7 @@ const InterviewPage = () => {
 
       setInterview(data.interview);
       setAnswer("");
+
       setMessage(
         "Interview started successfully."
       );
@@ -168,12 +227,12 @@ const InterviewPage = () => {
 
   const handleSubmitAnswer = async () => {
     if (!answer.trim()) {
-        if (recognition) {
-  recognition.stop();
-  setRecognition(null);
-}
+      if (recognition) {
+        recognition.stop();
+        setRecognition(null);
+      }
 
-setIsListening(false);
+      setIsListening(false);
       setError("Please enter an answer.");
       return;
     }
@@ -245,33 +304,31 @@ setIsListening(false);
       interview.currentQuestionIndex
     ];
 
+  useEffect(() => {
+    if (
+      interview?.status === "in_progress" &&
+      currentQuestion?.question
+    ) {
+      setAnswer("");
+      setLatestEvaluation(null);
 
-    useEffect(() => {
-  if (
-    interview?.status === "in_progress" &&
-    currentQuestion?.question
-  ) {
-    setAnswer("");
-    setLatestEvaluation(null);
-
-    speakText(currentQuestion.question);
-  }
-
-  return () => {
-    stopSpeaking();
-
-    if (recognition) {
-      recognition.stop();
+      speakText(currentQuestion.question);
     }
 
-    setIsListening(false);
-    setRecognition(null);
-  };
-}, [
-  interview?.status,
-  interview?.currentQuestionIndex,
-]);
+    return () => {
+      stopSpeaking();
 
+      if (recognition) {
+        recognition.stop();
+      }
+
+      setIsListening(false);
+      setRecognition(null);
+    };
+  }, [
+    interview?.status,
+    interview?.currentQuestionIndex,
+  ]);
 
   return (
     <div>
@@ -285,35 +342,82 @@ setIsListening(false);
             <h2>Start Interview</h2>
 
             <p>
-              Enter the role you are preparing
-              for.
+              Select your resume and enter the
+              role you are preparing for.
             </p>
 
-            <input
-              type="text"
-              value={targetRole}
-              onChange={(event) =>
-                setTargetRole(
-                  event.target.value
-                )
-              }
-              placeholder="Example: Software Engineer"
-            />
+            {loadingResumes ? (
+              <p>Loading your resumes...</p>
+            ) : resumes.length === 0 ? (
+              <p>
+                No resumes found. Please upload
+                a resume before starting an
+                interview.
+              </p>
+            ) : (
+              <>
+                <label htmlFor="resume">
+                  Select Resume
+                </label>
 
-            <br />
-            <br />
+                <br />
 
-            <button
-              type="button"
-              onClick={
-                handleStartInterview
-              }
-              disabled={loading}
-            >
-              {loading
-                ? "Starting Interview..."
-                : "Start Interview"}
-            </button>
+                <select
+                  id="resume"
+                  value={selectedResumeId}
+                  onChange={(event) =>
+                    setSelectedResumeId(
+                      event.target.value
+                    )
+                  }
+                >
+                  {resumes.map((resume) => (
+                    <option
+                      key={resume._id}
+                      value={resume._id}
+                    >
+                      {resume.originalFileName}
+                    </option>
+                  ))}
+                </select>
+
+                <br />
+                <br />
+
+                <label htmlFor="targetRole">
+                  Target Role
+                </label>
+
+                <br />
+
+                <input
+                  id="targetRole"
+                  type="text"
+                  value={targetRole}
+                  onChange={(event) =>
+                    setTargetRole(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Example: Software Engineer"
+                />
+
+                <br />
+                <br />
+
+                <button
+                  type="button"
+                  onClick={
+                    handleStartInterview
+                  }
+                  disabled={loading}
+                >
+                  {loading
+                    ? "Starting Interview..."
+                    : "Start Interview"}
+                </button>
+              </>
+            )}
           </section>
         ) : (
           <section>
