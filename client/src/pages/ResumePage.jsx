@@ -704,202 +704,201 @@ const ResumePage = () => {
               {analyses.map((analysis) => (
                 <div
                   key={analysis._id}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-[0_0_40px_rgba(168,85,247,0.15)] backdrop-blur-md md:p-8"
+                  className="space-y-6"
                 >
-                  <h3 className="text-2xl font-semibold text-white">
-                    {analysis.resume?.originalFileName ||
-                      "Resume Analysis"}
-                  </h3>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                    <h3 className="mb-4 text-lg font-semibold text-white">
+                      Summary
+                    </h3>
 
-                  <div className="mt-8 grid gap-6 md:grid-cols-2">
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 md:col-span-2">
-                      <h4 className="font-semibold text-white">
-                        Summary
-                      </h4>
+                    <p className="text-sm leading-relaxed text-zinc-300">
+                      {analysis.summary}
+                    </p>
+                  </div>
 
-                      <p className="mt-3 leading-7 text-zinc-400">
-                        {analysis.summary}
-                      </p>
-                    </div>
-
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                      <h4 className="font-semibold text-white">
+                  <div className="grid items-stretch gap-6 md:grid-cols-2">
+                    <div className="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                      <h3 className="mb-4 text-lg font-semibold text-white">
                         Skills
-                      </h4>
+                      </h3>
 
                       {analysis.skills?.length > 0 ? (
-                        <ul className="mt-4 space-y-2">
+                        <div className="flex flex-wrap gap-2">
                           {analysis.skills.map(
                             (skill, index) => (
-                              <li
+                              <span
                                 key={index}
-                                className="rounded-xl bg-purple-500/10 px-3 py-2 text-sm text-purple-300"
+                                className="rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 text-sm text-purple-100"
                               >
                                 {skill}
-                              </li>
+                              </span>
                             )
                           )}
-                        </ul>
+                        </div>
                       ) : (
-                        <p className="mt-3 text-sm text-zinc-500">
+                        <p className="text-sm leading-relaxed text-zinc-500">
                           No skills recorded.
                         </p>
                       )}
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                      <h4 className="font-semibold text-white">
+                    <div className="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                      <h3 className="mb-4 text-lg font-semibold text-white">
                         Strengths
-                      </h4>
+                      </h3>
 
                       {analysis.strengths?.length > 0 ? (
-                        <ul className="mt-4 space-y-2">
+                        <div className="flex flex-wrap gap-2">
                           {analysis.strengths.map(
                             (strength, index) => (
-                              <li
+                              <span
                                 key={index}
-                                className="rounded-xl bg-white/5 px-3 py-2 text-sm text-zinc-300"
+                                className="rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 text-sm text-purple-100"
                               >
                                 {strength}
-                              </li>
+                              </span>
                             )
                           )}
-                        </ul>
+                        </div>
                       ) : (
-                        <p className="mt-3 text-sm text-zinc-500">
+                        <p className="text-sm leading-relaxed text-zinc-500">
                           No strengths recorded.
                         </p>
                       )}
                     </div>
+                  </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                      <h4 className="font-semibold text-white">
+                  <div className="grid items-stretch gap-6 md:grid-cols-2">
+                    <div className="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                      <h3 className="mb-4 text-lg font-semibold text-white">
                         Improvement Areas
-                      </h4>
+                      </h3>
 
                       {analysis.improvementAreas?.length >
                       0 ? (
-                        <ul className="mt-4 space-y-2">
+                        <div className="flex flex-wrap gap-2">
                           {analysis.improvementAreas.map(
                             (area, index) => (
-                              <li
+                              <span
                                 key={index}
-                                className="rounded-xl bg-pink-500/10 px-3 py-2 text-sm text-pink-300"
+                                className="rounded-full border border-pink-500/20 bg-pink-500/10 px-3 py-1.5 text-sm text-pink-100"
                               >
                                 {area}
-                              </li>
+                              </span>
                             )
                           )}
-                        </ul>
+                        </div>
                       ) : (
-                        <p className="mt-3 text-sm text-zinc-500">
+                        <p className="text-sm leading-relaxed text-zinc-500">
                           No improvement areas recorded.
                         </p>
                       )}
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                      <h4 className="font-semibold text-white">
+                    <div className="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                      <h3 className="mb-4 text-lg font-semibold text-white">
                         Missing Sections
-                      </h4>
+                      </h3>
 
                       {analysis.missingSections?.length >
                       0 ? (
-                        <ul className="mt-4 space-y-2">
+                        <div className="flex flex-wrap gap-2">
                           {analysis.missingSections.map(
                             (section, index) => (
-                              <li
+                              <span
                                 key={index}
-                                className="rounded-xl bg-white/5 px-3 py-2 text-sm text-zinc-300"
+                                className="rounded-full border border-pink-500/20 bg-pink-500/10 px-3 py-1.5 text-sm text-pink-100"
                               >
                                 {section}
-                              </li>
+                              </span>
                             )
                           )}
-                        </ul>
+                        </div>
                       ) : (
-                        <p className="mt-3 text-sm text-zinc-500">
+                        <p className="text-sm leading-relaxed text-zinc-500">
                           No missing sections recorded.
                         </p>
                       )}
                     </div>
+                  </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                      <h4 className="font-semibold text-white">
+                  <div className="grid items-stretch gap-6 md:grid-cols-2">
+                    <div className="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                      <h3 className="mb-4 text-lg font-semibold text-white">
                         Experience Observations
-                      </h4>
+                      </h3>
 
                       {analysis.experienceObservations?.length >
                       0 ? (
-                        <ul className="mt-4 space-y-2">
+                        <div className="space-y-2">
                           {analysis.experienceObservations.map(
                             (observation, index) => (
-                              <li
+                              <p
                                 key={index}
-                                className="rounded-xl bg-white/5 px-3 py-2 text-sm text-zinc-300"
+                                className="text-sm leading-relaxed text-zinc-300"
                               >
                                 {observation}
-                              </li>
+                              </p>
                             )
                           )}
-                        </ul>
+                        </div>
                       ) : (
-                        <p className="mt-3 text-sm text-zinc-500">
+                        <p className="text-sm leading-relaxed text-zinc-500">
                           No experience observations recorded.
                         </p>
                       )}
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                      <h4 className="font-semibold text-white">
+                    <div className="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                      <h3 className="mb-4 text-lg font-semibold text-white">
                         Education Observations
-                      </h4>
+                      </h3>
 
                       {analysis.educationObservations?.length >
                       0 ? (
-                        <ul className="mt-4 space-y-2">
+                        <div className="space-y-2">
                           {analysis.educationObservations.map(
                             (observation, index) => (
-                              <li
+                              <p
                                 key={index}
-                                className="rounded-xl bg-white/5 px-3 py-2 text-sm text-zinc-300"
+                                className="text-sm leading-relaxed text-zinc-300"
                               >
                                 {observation}
-                              </li>
+                              </p>
                             )
                           )}
-                        </ul>
+                        </div>
                       ) : (
-                        <p className="mt-3 text-sm text-zinc-500">
+                        <p className="text-sm leading-relaxed text-zinc-500">
                           No education observations recorded.
                         </p>
                       )}
                     </div>
+                  </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 md:col-span-2">
-                      <h4 className="font-semibold text-white">
-                        ATS Suggestions
-                      </h4>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                    <h3 className="mb-4 text-lg font-semibold text-white">
+                      ATS Suggestions
+                    </h3>
 
-                      {analysis.atsSuggestions?.length > 0 ? (
-                        <ul className="mt-4 space-y-2">
-                          {analysis.atsSuggestions.map(
-                            (suggestion, index) => (
-                              <li
-                                key={index}
-                                className="rounded-xl border border-purple-400/10 bg-purple-500/5 px-4 py-3 text-sm text-zinc-300"
-                              >
-                                {suggestion}
-                              </li>
-                            )
-                          )}
-                        </ul>
-                      ) : (
-                        <p className="mt-3 text-sm text-zinc-500">
-                          No ATS suggestions recorded.
-                        </p>
-                      )}
-                    </div>
+                    {analysis.atsSuggestions?.length > 0 ? (
+                      <div className="space-y-2">
+                        {analysis.atsSuggestions.map(
+                          (suggestion, index) => (
+                            <p
+                              key={index}
+                              className="text-sm leading-relaxed text-zinc-300"
+                            >
+                              {suggestion}
+                            </p>
+                          )
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm leading-relaxed text-zinc-500">
+                        No ATS suggestions recorded.
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}
