@@ -72,3 +72,16 @@ export const rewriteResumeSection = async (
 
   return response.data;
 };
+
+export const getMyResumeRewrites = async (token) => {
+  const response = await apiClient.get(
+    "/resumes/rewrites",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};

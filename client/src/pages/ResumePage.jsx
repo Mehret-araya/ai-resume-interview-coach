@@ -7,6 +7,7 @@ import {
   analyzeResume,
   getMyResumeAnalyses,
   rewriteResumeSection,
+  getMyResumeRewrites,
 } from "../api/resumeApi.js";
 import {
   saveResumeEditor,
@@ -20,6 +21,9 @@ const ResumePage = () => {
   const [file, setFile] = useState(null);
   const [resumes, setResumes] = useState([]);
   const [analyses, setAnalyses] = useState([]);
+  const [rewriteHistory, setRewriteHistory] = useState([]);
+  const [loadingRewriteHistory, setLoadingRewriteHistory] =
+  useState(true);
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -115,10 +119,34 @@ const ResumePage = () => {
     }
   };
 
+const loadRewriteHistory = async () => {
+  try {
+    const data = await getMyResumeRewrites(token);
+
+    if (data.success) {
+      setRewriteHistory(data.rewrites || []);
+    }
+  } catch (error) {
+    console.error(
+      "Failed to load resume rewrite history:",
+      error
+    );
+
+    setError(
+      error.response?.data?.message ||
+        "Unable to load resume rewrite history"
+    );
+  } finally {
+    setLoadingRewriteHistory(false);
+  }
+};
+
+
   useEffect(() => {
     if (token) {
       loadResumes();
       loadAnalyses();
+      loadRewriteHistory();
     }
   }, [token]);
 
@@ -1137,9 +1165,96 @@ const handleUseRewrittenText = () => {
                 : "Download Resume PDF"}
             </button>
           </div>
+
+                  </section>
+
+        <section className="mt-8 rounded-2xl border border-purple-400/20 bg-white/5 p-6">
+          <div className="mb-6">
+            <p className="text-sm uppercase tracking-wider text-zinc-500">
+              Saved AI Rewrites
+            </p>
+
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              Rewrite History
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-zinc-400">
+              Previously generated resume improvements are saved here.
+            </p>
+          </div>
+
+          {loadingRewriteHistory ? (
+            <p className="text-zinc-400">
+              Loading rewrite history...
+            </p>
+          ) : rewriteHistory.length === 0 ? (
+            <p className="text-zinc-400">
+              No saved rewrites yet.
+            </p>
+          ) : (
+            <div className="space-y-6">
+              {rewriteHistory.map((rewrite) => (
+                <div
+                  key={rewrite._id}
+                  className="rounded-2xl border border-white/10 bg-black/30 p-5"
+                >
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-lg font-semibold text-white">
+                      {rewrite.section}
+                    </h3>
+
+                    <p className="text-xs text-zinc-500">
+                      Resume:{" "}
+                      {rewrite.resume?.originalFileName ||
+                        "Resume"}
+                    </p>
+
+                    <p className="text-xs text-zinc-500">
+                      {new Date(
+                        rewrite.createdAt
+                      ).toLocaleString()}
+                    </p>
+                  </div>
+
+                  <div className="mt-5">
+                    <p className="text-sm font-medium text-zinc-400">
+                      Original
+                    </p>
+
+                    <p className="mt-2 whitespace-pre-wrap rounded-xl border border-white/10 bg-black/20 p-4 leading-7 text-zinc-400">
+                      {rewrite.originalText}
+                    </p>
+                  </div>
+
+                  <div className="mt-5">
+                    <p className="text-sm font-medium text-purple-300">
+                      Improved Version
+                    </p>
+
+                    <p className="mt-2 whitespace-pre-wrap rounded-xl border border-purple-400/20 bg-purple-500/5 p-4 leading-7 text-zinc-200">
+                      {rewrite.rewrittenText}
+                    </p>
+                  </div>
+
+                  {rewrite.instructions && (
+                    <div className="mt-5">
+                      <p className="text-sm font-medium text-zinc-400">
+                        Instructions Used
+                      </p>
+
+                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-500">
+                        {rewrite.instructions}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <footer className="border-t border-white/10 pt-6 text-center">
+
           <p className="text-sm text-zinc-600">
             AI Resume + Interview Coach
           </p>
