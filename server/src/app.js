@@ -43,10 +43,9 @@ app.use(helmet());
 app.use(globalRateLimiter);
 
 // Enable requests from the frontend
-
 app.use(
   cors({
-    origin: "http://localhost:5174",
+    origin: "http://localhost:5173",
   })
 );
 
