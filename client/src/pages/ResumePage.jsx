@@ -228,65 +228,103 @@ const ResumePage = () => {
     }
   };
 
-  const handleRewrite = async () => {
-    if (!selectedResumeId) {
+const handleRewrite = async () => {
+  if (!selectedResumeId) {
+    setError("Please select a resume first.");
+    return;
+  }
+
+  if (!originalText.trim()) {
+    setError("Please enter the original resume text.");
+    return;
+  }
+
+  setMessage("");
+  setError("");
+  setRewriting(true);
+
+  try {
+    const data = await rewriteResumeSection(
+      selectedResumeId,
+      {
+        section: rewriteSection,
+        originalText,
+        instructions: rewriteInstructions,
+      },
+      token
+    );
+
+    if (!data.success) {
       setError(
-        "Please select a resume first."
+        data.message ||
+          "Resume rewrite failed"
       );
       return;
     }
 
-    if (!originalText.trim()) {
-      setError(
-        "Please enter the original resume text."
-      );
-      return;
-    }
+    setRewrittenText(
+      data.rewrite?.rewrittenText || ""
+    );
 
-    setMessage("");
-    setError("");
-    setRewriting(true);
+    setMessage(
+      "Resume section rewritten successfully."
+    );
+  } catch (error) {
+    console.error(
+      "Resume rewrite error:",
+      error
+    );
 
-    try {
-      const data =
-        await rewriteResumeSection(
-          selectedResumeId,
-          rewriteSection,
-          originalText,
-          rewriteInstructions,
-          token
-        );
+    setError(
+      error.response?.data?.message ||
+        "Unable to rewrite resume section"
+    );
+  } finally {
+    setRewriting(false);
+  }
+};
 
-      if (!data.success) {
-        setError(
-          data.message ||
-            "Resume rewrite failed"
-        );
-        return;
-      }
+const handleUseRewrittenText = () => {
+  if (!rewrittenText.trim()) {
+    setError("No improved content is available.");
+    return;
+  }
 
-      setRewrittenText(
-        data.rewrittenText || ""
-      );
+  setError("");
 
-      setMessage(
-        "Resume section rewritten successfully."
-      );
-    } catch (error) {
-      console.error(
-        "Resume rewrite error:",
-        error
-      );
+  if (!editorContent.trim()) {
+    setEditorContent(rewrittenText);
+    setMessage(
+      "Improved content added to the resume editor."
+    );
+    return;
+  }
 
-      setError(
-        error.response?.data?.message ||
-          "Unable to rewrite resume section"
-      );
-    } finally {
-      setRewriting(false);
-    }
-  };
+  if (
+    originalText.trim() &&
+    editorContent.includes(originalText)
+  ) {
+    setEditorContent(
+      editorContent.replace(
+        originalText,
+        rewrittenText
+      )
+    );
 
+    setMessage(
+      "Improved content replaced the original section in the editor."
+    );
+    return;
+  }
+
+  setEditorContent(
+    `${editorContent.trim()}\n\n${rewrittenText.trim()}`
+  );
+
+  setMessage(
+    "Improved content added to the resume editor."
+  );
+};
   const loadEditor = async (
     resumeId
   ) => {
@@ -1016,21 +1054,30 @@ const ResumePage = () => {
                 : "Improve Resume Section"}
             </button>
 
+
             {rewrittenText && (
-              <div className="rounded-2xl border border-purple-400/20 bg-purple-500/5 p-6">
-                <p className="text-sm uppercase tracking-wider text-zinc-500">
-                  AI result
-                </p>
+  <div className="rounded-2xl border border-purple-400/20 bg-purple-500/5 p-6">
+    <p className="text-sm uppercase tracking-wider text-zinc-500">
+      AI result
+    </p>
 
-                <h3 className="mt-2 text-xl font-semibold text-white">
-                  Improved Content
-                </h3>
+    <h3 className="mt-2 text-xl font-semibold text-white">
+      Improved Content
+    </h3>
 
-                <p className="mt-4 whitespace-pre-wrap leading-7 text-zinc-300">
-                  {rewrittenText}
-                </p>
-              </div>
-            )}
+    <p className="mt-4 whitespace-pre-wrap leading-7 text-zinc-300">
+      {rewrittenText}
+    </p>
+
+    <button
+      type="button"
+      onClick={handleUseRewrittenText}
+      className="mt-6 rounded-xl bg-purple-600 px-6 py-3 font-medium text-white shadow-[0_0_25px_rgba(168,85,247,0.5)] transition hover:bg-purple-500"
+    >
+      Use Improved Version in Editor
+    </button>
+  </div>
+)}
           </div>
         </section>
 
