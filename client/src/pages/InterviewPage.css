@@ -1,11 +1,10 @@
-
 .interview-page {
   min-height: 100vh;
   padding: 40px 20px;
-  background:#1f2937
+  background: #1f2937;
   color: #111827;
-  
 }
+
 .interview-container {
   width: 100%;
   max-width: 900px;
@@ -133,5 +132,5 @@
   resize: vertical;
   font-size: 16px;
   line-height: 1.6;
-  box-si
-
+  box-sizing: border-box;
+}

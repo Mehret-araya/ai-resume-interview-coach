@@ -331,399 +331,513 @@ const InterviewPage = () => {
   ]);
 
   return (
-    <div>
-      <header>
-        <h1>Text Mock Interview</h1>
-      </header>
+    <div className="relative min-h-screen overflow-hidden bg-[#0A0A0A] px-4 text-white sm:px-6">
+      {/* Background glow */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute left-1/2 top-1/4 h-[650px] w-[650px] -translate-x-1/2 rounded-full bg-purple-600/10 blur-3xl" />
 
-      <main>
-        {!interview ? (
-          <section>
-            <h2>Start Interview</h2>
+        <div className="absolute -left-40 top-40 h-80 w-80 rounded-full bg-purple-600/10 blur-3xl" />
 
-            <p>
-              Select your resume and enter the
-              role you are preparing for.
+        <div className="absolute -right-40 top-[45%] h-96 w-96 rounded-full bg-pink-500/10 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-6xl px-2 py-8 md:py-12">
+        {/* Header */}
+        <header className="mb-10 flex flex-col gap-6 border-b border-white/10 pb-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight text-white">
+              AI Career <span className="text-purple-400">+</span>{" "}
+              Interview Coach
+            </h1>
+
+            <p className="mt-1 text-sm text-zinc-500">
+              Practice and improve your interview performance
             </p>
+          </div>
 
-            {loadingResumes ? (
-              <p>Loading your resumes...</p>
-            ) : resumes.length === 0 ? (
-              <p>
-                No resumes found. Please upload
-                a resume before starting an
-                interview.
-              </p>
-            ) : (
-              <>
-                <label htmlFor="resume">
-                  Select Resume
-                </label>
+          <nav className="flex flex-wrap items-center gap-2">
+            <a
+              href="/dashboard"
+              className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-400 transition hover:bg-white/10 hover:text-white"
+            >
+              Dashboard
+            </a>
 
-                <br />
+            <a
+              href="/resume"
+              className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-400 transition hover:bg-white/10 hover:text-white"
+            >
+              My Resume
+            </a>
 
-                <select
-                  id="resume"
-                  value={selectedResumeId}
-                  onChange={(event) =>
-                    setSelectedResumeId(
-                      event.target.value
-                    )
-                  }
-                >
-                  {resumes.map((resume) => (
-                    <option
-                      key={resume._id}
-                      value={resume._id}
-                    >
-                      {resume.originalFileName}
-                    </option>
-                  ))}
-                </select>
+            <a
+              href="/interview"
+              className="rounded-xl bg-white/10 px-4 py-2 text-sm font-medium text-white"
+            >
+              Interview Coach
+            </a>
+          </nav>
+        </header>
 
-                <br />
-                <br />
-
-                <label htmlFor="targetRole">
-                  Target Role
-                </label>
-
-                <br />
-
-                <input
-                  id="targetRole"
-                  type="text"
-                  value={targetRole}
-                  onChange={(event) =>
-                    setTargetRole(
-                      event.target.value
-                    )
-                  }
-                  placeholder="Example: Software Engineer"
-                />
-
-                <br />
-                <br />
-
-                <button
-                  type="button"
-                  onClick={
-                    handleStartInterview
-                  }
-                  disabled={loading}
-                >
-                  {loading
-                    ? "Starting Interview..."
-                    : "Start Interview"}
-                </button>
-              </>
-            )}
-          </section>
-        ) : (
-          <section>
-            <h2>
-              Interview for:{" "}
-              {interview.targetRole}
-            </h2>
-
-            <p>
-              Question{" "}
-              {Math.min(
-                interview.currentQuestionIndex +
-                  1,
-                interview.totalQuestions
-              )}{" "}
-              of{" "}
-              {interview.totalQuestions}
-            </p>
-
-            {latestEvaluation && (
-              <section>
-                <h3>AI Evaluation</h3>
-
-                <p>
-                  <strong>
-                    Score:
-                  </strong>{" "}
-                  {latestEvaluation.score}
-                  /10
+        <main>
+          {!interview ? (
+            <section className="mx-auto max-w-3xl">
+              <div className="mb-8 text-center">
+                <p className="mb-4 text-sm uppercase tracking-[0.25em] text-zinc-500">
+                  Mock Interview
                 </p>
 
-                <p>
-                  <strong>
-                    Feedback:
-                  </strong>{" "}
-                  {
-                    latestEvaluation.evaluation
-                  }
-                </p>
-              </section>
-            )}
+                <h2 className="text-4xl font-bold tracking-tight text-white md:text-5xl">
+                  Prepare for your{" "}
+                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    next interview
+                  </span>
+                </h2>
 
-            {interview.status ===
-            "completed" ? (
-              <div>
-                <h3>
-                  Interview Completed
+                <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-zinc-400 md:text-base">
+                  Select your resume and enter the role you are preparing for.
+                  The AI interviewer will generate questions based on your
+                  background.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-[0_0_40px_rgba(168,85,247,0.15)] backdrop-blur-md md:p-8">
+                <h3 className="text-2xl font-semibold text-white">
+                  Start Interview
                 </h3>
 
-                <p>
-                  You have completed all
-                  five interview questions.
+                <p className="mt-2 text-sm text-zinc-400">
+                  Choose the resume you want to use for this interview.
                 </p>
 
-                {interview.finalReport && (
-                  <section>
-                    <h3>
-                      Final Interview Report
-                    </h3>
+                {loadingResumes ? (
+                  <div className="mt-8 rounded-xl border border-white/10 bg-white/5 px-4 py-4 text-sm text-zinc-400">
+                    Loading your resumes...
+                  </div>
+                ) : resumes.length === 0 ? (
+                  <div className="mt-8 rounded-xl border border-yellow-400/20 bg-yellow-500/10 px-4 py-4 text-sm text-yellow-300">
+                    No resumes found. Please upload a resume before starting
+                    an interview.
+                  </div>
+                ) : (
+                  <div className="mt-8 space-y-6">
+                    <div>
+                      <label
+                        htmlFor="resume"
+                        className="mb-2 block text-sm font-medium text-zinc-400"
+                      >
+                        Select Resume
+                      </label>
 
-                    {(() => {
-                      let report;
+                      <select
+                        id="resume"
+                        value={selectedResumeId}
+                        onChange={(event) =>
+                          setSelectedResumeId(
+                            event.target.value
+                          )
+                        }
+                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+                      >
+                        {resumes.map((resume) => (
+                          <option
+                            key={resume._id}
+                            value={resume._id}
+                            className="bg-zinc-900 text-white"
+                          >
+                            {resume.originalFileName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                      try {
-                        report =
-                          typeof interview.finalReport ===
-                          "string"
-                            ? JSON.parse(
-                                interview.finalReport
-                              )
-                            : interview.finalReport;
-                      } catch {
-                        report = null;
+                    <div>
+                      <label
+                        htmlFor="targetRole"
+                        className="mb-2 block text-sm font-medium text-zinc-400"
+                      >
+                        Target Role
+                      </label>
+
+                      <input
+                        id="targetRole"
+                        type="text"
+                        value={targetRole}
+                        onChange={(event) =>
+                          setTargetRole(
+                            event.target.value
+                          )
+                        }
+                        placeholder="Example: Software Engineer"
+                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-zinc-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={
+                        handleStartInterview
                       }
-
-                      if (!report) {
-                        return (
-                          <p>
-                            Final report
-                            could not be
-                            displayed.
-                          </p>
-                        );
-                      }
-
-                      return (
-                        <div>
-                          <h4>
-                            Overall
-                            Performance
-                          </h4>
-
-                          <p>
-                            {
-                              report.overallPerformance
-                            }
-                          </p>
-
-                          <h4>
-                            Key Strengths
-                          </h4>
-
-                          {report.strengths
-                            ?.length > 0 ? (
-                            <ul>
-                              {report.strengths.map(
-                                (
-                                  strength,
-                                  index
-                                ) => (
-                                  <li
-                                    key={
-                                      index
-                                    }
-                                  >
-                                    {strength}
-                                  </li>
-                                )
-                              )}
-                            </ul>
-                          ) : (
-                            <p>
-                              No strengths
-                              recorded.
-                            </p>
-                          )}
-
-                          <h4>
-                            Areas for
-                            Improvement
-                          </h4>
-
-                          {report
-                            .areasForImprovement
-                            ?.length > 0 ? (
-                            <ul>
-                              {report.areasForImprovement.map(
-                                (
-                                  area,
-                                  index
-                                ) => (
-                                  <li
-                                    key={
-                                      index
-                                    }
-                                  >
-                                    {area}
-                                  </li>
-                                )
-                              )}
-                            </ul>
-                          ) : (
-                            <p>
-                              No improvement
-                              areas recorded.
-                            </p>
-                          )}
-
-                          <h4>
-                            Technical
-                            Performance
-                          </h4>
-
-                          <p>
-                            {
-                              report.technicalPerformance
-                            }
-                          </p>
-
-                          <h4>
-                            Communication
-                            Performance
-                          </h4>
-
-                          <p>
-                            {
-                              report.communicationPerformance
-                            }
-                          </p>
-
-                          <h4>
-                            Recommendations
-                          </h4>
-
-                          {report
-                            .recommendations
-                            ?.length > 0 ? (
-                            <ul>
-                              {report.recommendations.map(
-                                (
-                                  recommendation,
-                                  index
-                                ) => (
-                                  <li
-                                    key={
-                                      index
-                                    }
-                                  >
-                                    {
-                                      recommendation
-                                    }
-                                  </li>
-                                )
-                              )}
-                            </ul>
-                          ) : (
-                            <p>
-                              No recommendations
-                              recorded.
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </section>
+                      disabled={loading}
+                      className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 py-3 font-semibold text-white shadow-[0_0_25px_rgba(168,85,247,0.5)] transition hover:from-purple-500 hover:to-pink-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {loading
+                        ? "Starting Interview..."
+                        : "Start Interview"}
+                    </button>
+                  </div>
                 )}
               </div>
-            ) : (
-              <div>
-                <h3>
-                  {currentQuestion?.question}
-                </h3>
+            </section>
+          ) : (
+            <section>
+              <div className="mb-8">
+                <p className="mb-3 text-sm uppercase tracking-[0.25em] text-zinc-500">
+                  Mock Interview
+                </p>
 
-                <div>
+                <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
+                  Interview for:{" "}
+                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    {interview.targetRole}
+                  </span>
+                </h2>
+
+                <p className="mt-3 text-sm text-zinc-400">
+                  Question{" "}
+                  {Math.min(
+                    interview.currentQuestionIndex +
+                      1,
+                    interview.totalQuestions
+                  )}{" "}
+                  of{" "}
+                  {interview.totalQuestions}
+                </p>
+              </div>
+
+              {latestEvaluation && (
+                <section className="mb-6 rounded-2xl border border-purple-400/20 bg-purple-500/10 p-6 shadow-[0_0_35px_rgba(168,85,247,0.12)] backdrop-blur-md">
+                  <div className="mb-4 flex items-center justify-between gap-4">
+                    <h3 className="text-xl font-semibold text-white">
+                      AI Evaluation
+                    </h3>
+
+                    <div className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-purple-300">
+                      Score: {latestEvaluation.score}/10
+                    </div>
+                  </div>
+
+                  <p className="text-sm leading-6 text-zinc-300">
+                    <strong className="text-white">
+                      Feedback:
+                    </strong>{" "}
+                    {latestEvaluation.evaluation}
+                  </p>
+                </section>
+              )}
+
+              {interview.status ===
+              "completed" ? (
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-[0_0_40px_rgba(168,85,247,0.15)] backdrop-blur-md md:p-8">
+                  <div className="mb-8 text-center">
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-500/10 text-2xl text-green-400">
+                      ✓
+                    </div>
+
+                    <h3 className="text-2xl font-bold text-white">
+                      Interview Completed
+                    </h3>
+
+                    <p className="mt-2 text-sm text-zinc-400">
+                      You have completed all five interview questions.
+                    </p>
+                  </div>
+
+                  {interview.finalReport && (
+                    <section>
+                      <h3 className="mb-6 border-b border-white/10 pb-4 text-xl font-semibold text-white">
+                        Final Interview Report
+                      </h3>
+
+                      {(() => {
+                        let report;
+
+                        try {
+                          report =
+                            typeof interview.finalReport ===
+                            "string"
+                              ? JSON.parse(
+                                  interview.finalReport
+                                )
+                              : interview.finalReport;
+                        } catch {
+                          report = null;
+                        }
+
+                        if (!report) {
+                          return (
+                            <p className="rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                              Final report could not be displayed.
+                            </p>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-8">
+                            <div>
+                              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-purple-400">
+                                Overall Performance
+                              </h4>
+
+                              <p className="text-sm leading-7 text-zinc-300">
+                                {
+                                  report.overallPerformance
+                                }
+                              </p>
+                            </div>
+
+                            <div>
+                              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-purple-400">
+                                Key Strengths
+                              </h4>
+
+                              {report.strengths
+                                ?.length > 0 ? (
+                                <ul className="space-y-2">
+                                  {report.strengths.map(
+                                    (
+                                      strength,
+                                      index
+                                    ) => (
+                                      <li
+                                        key={
+                                          index
+                                        }
+                                        className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-zinc-300"
+                                      >
+                                        {strength}
+                                      </li>
+                                    )
+                                  )}
+                                </ul>
+                              ) : (
+                                <p className="text-sm text-zinc-500">
+                                  No strengths recorded.
+                                </p>
+                              )}
+                            </div>
+
+                            <div>
+                              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-purple-400">
+                                Areas for Improvement
+                              </h4>
+
+                              {report
+                                .areasForImprovement
+                                ?.length > 0 ? (
+                                <ul className="space-y-2">
+                                  {report.areasForImprovement.map(
+                                    (
+                                      area,
+                                      index
+                                    ) => (
+                                      <li
+                                        key={
+                                          index
+                                        }
+                                        className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-zinc-300"
+                                      >
+                                        {area}
+                                      </li>
+                                    )
+                                  )}
+                                </ul>
+                              ) : (
+                                <p className="text-sm text-zinc-500">
+                                  No improvement areas recorded.
+                                </p>
+                              )}
+                            </div>
+
+                            <div>
+                              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-purple-400">
+                                Technical Performance
+                              </h4>
+
+                              <p className="text-sm leading-7 text-zinc-300">
+                                {
+                                  report.technicalPerformance
+                                }
+                              </p>
+                            </div>
+
+                            <div>
+                              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-purple-400">
+                                Communication Performance
+                              </h4>
+
+                              <p className="text-sm leading-7 text-zinc-300">
+                                {
+                                  report.communicationPerformance
+                                }
+                              </p>
+                            </div>
+
+                            <div>
+                              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-purple-400">
+                                Recommendations
+                              </h4>
+
+                              {report
+                                .recommendations
+                                ?.length > 0 ? (
+                                <ul className="space-y-2">
+                                  {report.recommendations.map(
+                                    (
+                                      recommendation,
+                                      index
+                                    ) => (
+                                      <li
+                                        key={
+                                          index
+                                        }
+                                        className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-zinc-300"
+                                      >
+                                        {
+                                          recommendation
+                                        }
+                                      </li>
+                                    )
+                                  )}
+                                </ul>
+                              ) : (
+                                <p className="text-sm text-zinc-500">
+                                  No recommendations recorded.
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </section>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-[0_0_40px_rgba(168,85,247,0.15)] backdrop-blur-md md:p-8">
+                  <div className="mb-8">
+                    <div className="mb-3 flex items-center gap-2">
+                      <span className="rounded-lg bg-purple-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-purple-400">
+                        Current Question
+                      </span>
+                    </div>
+
+                    <h3 className="text-2xl font-semibold leading-8 text-white">
+                      {currentQuestion?.question}
+                    </h3>
+                  </div>
+
+                  <div className="mb-6 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        speakText(
+                          currentQuestion?.question ||
+                            ""
+                        )
+                      }
+                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-zinc-300 transition hover:bg-white/10 hover:text-white"
+                    >
+                      🔊 Read Question
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={stopSpeaking}
+                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-zinc-400 transition hover:bg-red-500/10 hover:text-red-400"
+                    >
+                      Stop
+                    </button>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="answer"
+                      className="mb-2 block text-sm font-medium text-zinc-400"
+                    >
+                      Your Answer
+                    </label>
+
+                    <textarea
+                      id="answer"
+                      value={answer}
+                      onChange={(event) =>
+                        setAnswer(
+                          event.target.value
+                        )
+                      }
+                      rows="10"
+                      cols="80"
+                      placeholder="Type your answer here..."
+                      className="w-full resize-y rounded-xl border border-white/10 bg-white/5 px-4 py-4 text-white placeholder:text-zinc-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30"
+                    />
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={
+                        handleStartListening
+                      }
+                      disabled={isListening}
+                      className="rounded-xl border border-purple-400/20 bg-purple-500/10 px-4 py-2.5 text-sm font-medium text-purple-300 transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isListening
+                        ? "Listening..."
+                        : "🎤 Start Recording"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={
+                        handleStopListening
+                      }
+                      disabled={!isListening}
+                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-zinc-400 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Stop Recording
+                    </button>
+                  </div>
+
                   <button
                     type="button"
-                    onClick={() =>
-                      speakText(
-                        currentQuestion?.question ||
-                          ""
-                      )
+                    onClick={
+                      handleSubmitAnswer
                     }
+                    disabled={submitting}
+                    className="mt-6 w-full rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 py-3 font-semibold text-white shadow-[0_0_25px_rgba(168,85,247,0.5)] transition hover:from-purple-500 hover:to-pink-500 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    🔊 Read Question
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={stopSpeaking}
-                  >
-                    Stop
+                    {submitting
+                      ? "Evaluating..."
+                      : "Submit Answer"}
                   </button>
                 </div>
+              )}
+            </section>
+          )}
 
-                <br />
+          {message && (
+            <div className="mt-6 rounded-xl border border-purple-400/20 bg-purple-500/10 px-4 py-3 text-sm text-purple-300">
+              {message}
+            </div>
+          )}
 
-                <textarea
-                  value={answer}
-                  onChange={(event) =>
-                    setAnswer(
-                      event.target.value
-                    )
-                  }
-                  rows="10"
-                  cols="80"
-                  placeholder="Type your answer here..."
-                />
-
-                <br />
-                <br />
-
-                <button
-                  type="button"
-                  onClick={
-                    handleStartListening
-                  }
-                  disabled={isListening}
-                >
-                  {isListening
-                    ? "Listening..."
-                    : "🎤 Start Recording"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={
-                    handleStopListening
-                  }
-                  disabled={!isListening}
-                >
-                  Stop Recording
-                </button>
-
-                <br />
-                <br />
-
-                <button
-                  type="button"
-                  onClick={
-                    handleSubmitAnswer
-                  }
-                  disabled={submitting}
-                >
-                  {submitting
-                    ? "Evaluating..."
-                    : "Submit Answer"}
-                </button>
-              </div>
-            )}
-          </section>
-        )}
-
-        {message && <p>{message}</p>}
-
-        {error && <p>{error}</p>}
-      </main>
+          {error && (
+            <div className="mt-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              {error}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 };
